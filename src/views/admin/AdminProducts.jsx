@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { Modal } from "bootstrap";
 import axios from "axios";
-import "./assets/style.css";
-import ProductModal from "./assets/components/ProductModal";
-import Pagination from "./assets/components/Pagination";
-import Login from "./views/Login";
+import ProductModal from "../../assets/components/ProductModal";
+import Pagination from "../../assets/components/Pagination";
+import { useDispatch } from "react-redux";
+import { createAsyncMessage } from "../../slice/messageSlice";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -26,7 +26,7 @@ const INITIAL_TEMPLATE_DATA = {
   vegetarian: "",
 };
 
-function App() {
+function AdminProducts() {
   const [isAuth, setIsAuth] = useState(false);
   const [products, setProducts] = useState([]);
   const [templateProduct, setTemplateProduct] = useState(INITIAL_TEMPLATE_DATA);
@@ -35,6 +35,7 @@ function App() {
   //分業物件
   const [pagination, setPagination] = useState({});
   const productsModalRef = useRef(null);
+  const dispatch=useDispatch()
 
   //Cookie存取函式
   const saveToken = (token, expired) => {
@@ -91,27 +92,21 @@ function App() {
   const getProducts = async (page = 1) => {
     try {
       const res = await axios.get(
-        `${API_BASE}/api/${API_PATH}/admin/products?page=${page}`,
+        `${API_BASE}/api/${API_PATH}/admin/product?page=${page}`,
       );
       setProducts(res.data.products);
       //取得物件時也要取得分頁結構
       setPagination(res.data.pagination);
     } catch (error) {
-      const messages = error.response?.data?.message;
-      toast.error(
-        Array.isArray(messages)
-          ? messages.join(", ")
-          : messages || "取得商品失敗",
-      );
+  const messages = error.response?.data?.message; 
+
+      dispatch(createAsyncMessage(messages))
     }
   };
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
-      {!isAuth ? (
-        <Login getProducts={getProducts} setIsAuth={setIsAuth} />
-      ) : (
+
         <div className="container mt-4">
           <h2 className="fw-bold dark-coffee-text mb-3">產品列表</h2>
           <div className="text-end mb-4">
@@ -173,7 +168,7 @@ function App() {
           </table>
           <Pagination pagination={pagination} onChangePage={getProducts} />
         </div>
-      )}
+      
       <ProductModal
         modalType={modalType}
         templateProduct={templateProduct}
@@ -184,4 +179,4 @@ function App() {
   );
 }
 
-export default App;
+export default AdminProducts;

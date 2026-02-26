@@ -3,12 +3,15 @@ import { router } from "./router";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./assets/style.css";
+import MessageToast from "./assets/components/MessageToast ";
 
 function App() {
   return (
     <>
+     <MessageToast />
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
       <RouterProvider router={router} />
+     
     </>
   );
 }

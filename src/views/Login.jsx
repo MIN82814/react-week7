@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState} from "react";
+import { useNavigate } from "react-router";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
@@ -11,6 +12,7 @@ function Login({ getProducts, setIsAuth }) {
   //   username: "",
   //   password: "",
   // });
+  const navigate=useNavigate();
   const {
     register,
     formState: { errors, isValid },
@@ -34,7 +36,7 @@ function Login({ getProducts, setIsAuth }) {
       const res = await axios.post(`${API_BASE}/admin/signin`, formData);
       const { token, expired } = res.data; // 先在這裡拿到
       saveToken(token, expired); // 再傳給函式
-
+navigate('/admin/products')
       // getProducts();
       // setIsAuth(true);
     } catch (error) {
