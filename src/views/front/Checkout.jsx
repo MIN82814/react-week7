@@ -18,6 +18,7 @@ function Checkout() {
   const [loadingCartId, setLoadingCartId] = useState(null);
   const [loadingProductId, setLoadingProductsId] = useState(null);
   const productModalRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -85,6 +86,7 @@ function Checkout() {
   };
   //新增數量
   const updateCart = async (cartId, productId, qty = 1) => {
+    setLoadingCartId(cartId);
     try {
       const data = { product_id: productId, qty };
       const res = await axios.put(
@@ -98,11 +100,14 @@ function Checkout() {
       toast.error(
         Array.isArray(messages) ? messages.join(", ") : messages || "操作失敗",
       );
+    } finally {
+      setLoadingCartId(null); // 清除 Loading
     }
   };
 
   //刪除單品項
   const delCart = async (cartId) => {
+    setLoadingCartId(cartId);
     try {
       const res = await axios.delete(
         `${API_BASE}/api/${API_PATH}/cart/${cartId}`,
@@ -114,6 +119,8 @@ function Checkout() {
       toast.error(
         Array.isArray(messages) ? messages.join(", ") : messages || "操作失敗",
       );
+    } finally {
+      setLoadingCartId(null); // 清除 Loading
     }
   };
   //刪除全部品項
@@ -130,6 +137,11 @@ function Checkout() {
     }
   };
   const onSubmit = async (formData) => {
+    if (cart.carts?.length === 0) {
+      toast.warn("購物車是空的");
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const data = {
         user: formData,
@@ -140,6 +152,7 @@ function Checkout() {
       });
       getCart();
       toast.success("訂購完成");
+      reset();
     } catch (error) {
       const messages = error.response?.data?.message;
       toast.error(
@@ -147,10 +160,12 @@ function Checkout() {
           ? messages.join(", ")
           : messages || "訂單送出失敗",
       );
+    } finally {
+      setIsSubmitting(false);
     }
-    reset();
   };
   const handleView = async (id) => {
+    setProduct({});
     setLoadingProductsId(id);
     try {
       const res = await axios.get(`${API_BASE}/api/${API_PATH}/product/${id}`);
@@ -248,6 +263,7 @@ function Checkout() {
           type="button"
           className="btn btn-outline-danger"
           onClick={() => delAllCart()}
+          disabled={cart.carts?.length === 0}
         >
           清空購物車
         </button>
@@ -264,45 +280,57 @@ function Checkout() {
           </tr>
         </thead>
         <tbody>
-          {cart?.carts?.map((cartItem) => (
-            <tr key={cartItem.id}>
-              <td>
-                <button
-                  type="button"
-                  className="btn btn-outline-danger btn-sm"
-                  onClick={() => delCart(cartItem.id)}
-                >
-                  刪除
-                </button>
+          {cart?.carts?.length > 0 ? (
+            cart?.carts?.map((cartItem) => (
+              <tr key={cartItem.id}>
+                <td>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => delCart(cartItem.id)}
+                  >
+                    刪除
+                  </button>
+                </td>
+                <th scope="row">{cartItem.product.title}</th>
+                <td>
+                  <div
+                    className="input-group input-group-sm mb-3"
+                    style={{ width: "20%" }}
+                  >
+                    <input
+                      type="number"
+                      className="form-control"
+                      aria-label="Sizing example input"
+                      aria-describedby="inputGroup-sizing-sm"
+                      min="1"
+                      value={cartItem.qty}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= 1 && val !== cartItem.qty) {
+                          updateCart(cartItem.id, cartItem.product_id, val);
+                        }
+                      }}
+                    />
+                    <span
+                      className="input-group-text"
+                      id="inputGroup-sizing-sm"
+                    >
+                      {cartItem.product.unit}
+                    </span>
+                  </div>
+                </td>
+                <td className="text-end">{currency(cartItem.final_total)}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" className="text-center py-4">
+                購物車目前沒有商品喔！
               </td>
-              <th scope="row">{cartItem.product.title}</th>
-              <td>
-                <div
-                  className="input-group input-group-sm mb-3"
-                  style={{ width: "20%" }}
-                >
-                  <input
-                    type="number"
-                    className="form-control"
-                    aria-label="Sizing example input"
-                    aria-describedby="inputGroup-sizing-sm"
-                    min="1"
-                    value={cartItem.qty}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (val >= 1 && val !== cartItem.qty) {
-                        updateCart(cartItem.id, cartItem.product_id, val);
-                      }
-                    }}
-                  />
-                  <span className="input-group-text" id="inputGroup-sizing-sm">
-                    {cartItem.product.unit}
-                  </span>
-                </div>
-              </td>
-              <td className="text-end">{currency(cartItem.final_total)}</td>
+              {/* 建議 3：提示文字 */}
             </tr>
-          ))}
+          )}
         </tbody>
         <tfoot>
           <tr>
@@ -404,7 +432,11 @@ function Checkout() {
             ></textarea>
           </div>
           <div className="text-end">
-            <button type="submit" className="btn btn-danger">
+            <button
+              type="submit"
+              className="btn btn-danger"
+              disabled={cart.carts?.length === 0 || isSubmitting}
+            >
               送出訂單
             </button>
           </div>

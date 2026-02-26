@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import useMessage from "../../hooks/useMessage";
 const API_BASE = import.meta.env.VITE_API_BASE;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
   const [tempData, setTempData] = useState(templateProduct);
+  const { showSuccess, showError } = useMessage();
   //每次變更templateProduct都要傳進去
   useEffect(() => {
     setTempData(templateProduct);
@@ -82,14 +83,9 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
       const res = await axios[method](url, productData);
       getProducts();
       closeModal();
-      toast.success("新增編輯成功");
+      showSuccess("資料更新成功");
     } catch (error) {
-      const messages = error.response?.data?.message;
-      toast.error(
-        Array.isArray(messages)
-          ? messages.join(", ")
-          : messages || "新增編輯失敗",
-      );
+      showError("資料更新失敗");
     }
   };
 
@@ -101,12 +97,9 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
       );
       getProducts();
       closeModal();
-      toast.success("刪除成功");
+      showSuccess("刪除成功");
     } catch (error) {
-      const messages = error.response?.data?.message;
-      toast.error(
-        Array.isArray(messages) ? messages.join(", ") : messages || "刪除失敗",
-      );
+      showError("刪除失敗");
     }
   };
   //上傳圖片功能api
@@ -126,11 +119,9 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
         formData,
       );
       setTempData((pre) => ({ ...pre, imageUrl: res.data.imageUrl }));
+      showSuccess("新增成功");
     } catch (error) {
-      const messages = error.response?.data?.message;
-      toast.error(
-        Array.isArray(messages) ? messages.join(", ") : messages || "新增失敗",
-      );
+      showError("新增失敗");
     }
   };
   return (
