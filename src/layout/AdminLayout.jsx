@@ -6,17 +6,16 @@ function AdminLayout() {
       <div className="container flex-grow-1">
         <header>
           <ul className="nav">
-          
             <li className="nav-item">
               <Link
                 className="nav-link active"
                 aria-current="page"
-                to="/admin/product"
+                to="/admin/products"
               >
                 後台產品列表
               </Link>
             </li>
-              <li className="nav-item">
+            <li className="nav-item">
               <Link
                 className="nav-link active"
                 aria-current="page"
