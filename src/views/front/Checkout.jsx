@@ -184,6 +184,7 @@ function Checkout() {
   };
   const closeModal = () => {
     productModalRef.current.hide();
+    setProduct({});
   };
   return (
     <div className="container">
