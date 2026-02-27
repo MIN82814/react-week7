@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function DetailProductModal({ product, addCart, closeModal, getCart }) {
   const [cartQty, setCartQty] = useState(1);
+  useEffect(() => {
+    setCartQty(1);
+  }, [product]);
   const handleAddCart = () => {
     addCart(product.id, cartQty);
     getCart();

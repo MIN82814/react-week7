@@ -7,6 +7,7 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState({});
+
   useEffect(() => {
     const handleView = async (id) => {
       try {
